@@ -1,0 +1,651 @@
+# HISTÓRICO — não usar como referência de implantação
+# Documento vigente: PLANEJAMENTO.md (versão 1.1, 24/09/2026)
+
+# Planejamento técnico: Sistema de Atendimento Imobiliário Self-Hosted
+
+<box gap={2}>
+  <badge color="success">Projeto de implantação</badge>
+  <title size="2xl">Atendimento inteligente e CRM imobiliário</title>
+  <text color="secondary">Sistema personalizado para Letícia | Versão 1.0 | 22/09/2026</text>
+</box>
+
+## 1. Objetivo do projeto
+
+Desenvolver e implantar um sistema próprio, hospedado em uma VPS, que automatize o atendimento comercial de Letícia pelo WhatsApp e organize seus clientes em um CRM.
+
+O sistema deverá utilizar o número de WhatsApp que ela já usa profissionalmente, preservar sua possibilidade de atendimento manual e executar automaticamente as tarefas repetitivas de sua rotina.
+
+**O resultado esperado é que Letícia deixe de gastar tempo com apresentações, envio de materiais, respostas padronizadas e organização manual de contatos, concentrando seu trabalho nos clientes que precisam de atendimento pessoal.**
+
+### Premissas estabelecidas
+
+<box border radius="lg" padding={3} gap={2}>
+  <row align="center"><icon name="check-circle" color="success"/> Hospedagem própria em VPS</row>
+  <row align="center"><icon name="check-circle" color="success"/> Ferramentas open source</row>
+  <row align="center"><icon name="check-circle" color="success"/> Evolution API como integração com WhatsApp</row>
+  <row align="center"><icon name="check-circle" color="success"/> Evo CRM Community como base do CRM</row>
+  <row align="center"><icon name="check-circle" color="success"/> Python e API da OpenAI para funcionalidades inteligentes</row>
+  <row align="center"><icon name="check-circle" color="success"/> Atendimento automático e intervenção humana</row>
+  <row align="center"><icon name="check-circle" color="success"/> Implementação incremental</row>
+  <row align="center"><icon name="x-circle" color="danger"/> Sem n8n, Meta Cloud API ou CRM comercial de assinatura</row>
+</box>
+
+O sistema não será desenvolvido como um SaaS comercial. Inicialmente, será uma instalação dedicada à Letícia, com possibilidade de expansão futura.
+
+---
+
+## 2. Arquitetura proposta
+
+A arquitetura será construída a partir dos componentes existentes do ecossistema Evolution, evitando o desenvolvimento desnecessário de funcionalidades que o CRM já oferece.
+
+O Evo CRM Community possui serviços próprios de autenticação, conversas, contatos, agentes, processamento de IA e interface web. A Evolution API funciona como seu provedor de WhatsApp. <Cite refs={["turn771161search6","turn771161search0"]}/>
+
+<box border radius="xl" padding={3} gap={2}>
+  <box background="surface-secondary" radius="md" padding={3} align="center" gap={1}>
+    <icon name="smartphone" size="xl"/>
+    **WhatsApp da Letícia**
+
+    <text color="secondary" size="sm" textAlign="center">Contato com clientes, mensagens, áudios e vídeos</text>
+  </box>
+  <box align="center"><icon name="arrow-down" color="secondary"/></box>
+  <box background="surface" border radius="md" padding={3} align="center" gap={1}>
+    **Evolution API**
+
+    <text color="secondary" size="sm" textAlign="center">Conexão com WhatsApp Web, recebimento e envio de mensagens</text>
+  </box>
+  <box align="center"><icon name="arrow-down" color="secondary"/></box>
+  <box background="surface" border radius="md" padding={3} align="center" gap={1}>
+    **Evo CRM Community**
+
+    <text color="secondary" size="sm" textAlign="center">Contatos, conversas, atendimento humano, automações e agentes</text>
+  </box>
+  <box align="center"><icon name="arrow-down-up" color="secondary"/></box>
+  <box background="surface" border radius="md" padding={3} align="center" gap={1}>
+    **Camada de automação Python**
+
+    <text color="secondary" size="sm" textAlign="center">Regras imobiliárias, classificação de leads, agendamentos e integração com IA</text>
+  </box>
+  <box align="center"><icon name="arrow-down-up" color="secondary"/></box>
+  <box background="surface-secondary" radius="md" padding={3} align="center" gap={1}>
+    **OpenAI API**
+
+    <text color="secondary" size="sm" textAlign="center">Interpretação de mensagens e respostas a perguntas fora do roteiro</text>
+  </box>
+  <divider color="subtle"/>
+  <row justify="center" align="center" wrap="wrap">
+    <badge color="info">PostgreSQL</badge>
+    <badge color="info">Redis</badge>
+    <badge color="info">Armazenamento de mídia</badge>
+  </row>
+  <caption textAlign="center">Infraestrutura de persistência, tarefas assíncronas e armazenamento</caption>
+</box>
+
+A comunicação entre os componentes ocorrerá por APIs e eventos. O CRM continuará sendo a interface principal de trabalho da Letícia.
+
+A camada Python não substituirá indiscriminadamente os recursos nativos do CRM. Ela executará apenas as regras específicas do atendimento imobiliário que não forem atendidas pelos componentes existentes.
+
+---
+
+## 3. Stack tecnológica
+
+| Componente | Tecnologia | Responsabilidade |
+|---|---|---|
+| Hospedagem | VPS Linux | Execução do sistema |
+| Orquestração | Docker Compose | Implantação dos serviços |
+| Proxy reverso | Traefik | HTTPS e roteamento |
+| WhatsApp | Evolution API | Integração e mensageria |
+| CRM | Evo CRM Community | Contatos, conversas e atendimento |
+| Automação personalizada | Python + FastAPI | Regras e fluxos comerciais |
+| Inteligência artificial | OpenAI API | Interpretação e geração de respostas |
+| Banco de dados | PostgreSQL | Persistência |
+| Cache e tarefas | Redis | Controle de estado e processamento assíncrono |
+| Armazenamento | Volumes locais | Vídeos, imagens, áudios e documentos |
+
+**Importante:** o Evo CRM Community não é uma aplicação monolítica pequena. Seu conjunto de serviços inclui componentes desenvolvidos em Ruby, Go, Python e React. A implantação deverá aproveitar a arquitetura oficial, em vez de tentar substituí-la por uma aplicação Python única. <Cite refs={["turn771161search5","turn771161search6"]}/>
+
+O repositório oficial possui uma versão estável identificada como `v1.1.0`, publicada em 2 de setembro de 2026. Ela será a referência inicial para homologação, com imagens fixadas por versão, sem utilizar automaticamente a tag `latest`. <Cite refs={["turn131565search0"]}/>
+
+### Repositórios de referência
+
+<box border radius="lg" gap={0}>
+  <row align="center" padding={3}>
+    <icon name="github" size="lg"/>
+    <box flex="1" gap=1>
+      **Evo CRM Community**
+
+      <text color="secondary" size="sm">CRM, interface de atendimento e serviços de automação.</text>
+      <text size="sm"><Link url="https://github.com/evolution-foundation/evo-crm-community" title="Repositório oficial"/></text>
+    </box>
+  </row>
+  <divider color="subtle"/>
+  <row align="center" padding={3}>
+    <icon name="github" size="lg"/>
+    <box flex="1" gap=1>
+      **Evolution API**
+
+      <text color="secondary" size="sm">Integração com WhatsApp e envio de mensagens.</text>
+      <text size="sm"><Link url="https://github.com/evolution-foundation/evolution-api" title="Repositório oficial"/></text>
+    </box>
+  </row>
+</box>
+
+---
+
+## 4. Funcionalidades do sistema
+
+### Módulo 1. Atendimento automático no WhatsApp
+
+<badge color="success">Prioridade: essencial</badge>
+
+Quando um novo cliente entrar em contato, o sistema deverá iniciar o atendimento de acordo com uma sequência previamente configurada.
+
+<box border radius="lg" padding={3} gap={2}>
+  <text color="secondary" weight="medium" size="xs">FLUXO DE ATENDIMENTO INICIAL</text>
+  <box background="surface-secondary" radius="md" padding={2}>
+    <text weight="medium">1. Novo cliente envia mensagem</text>
+    <text size="sm" color="secondary">O sistema identifica o contato e verifica se já existe atendimento em andamento.</text>
+  </box>
+  <box align="center"><icon name="arrow-down" color="secondary"/></box>
+  <box background="surface-secondary" radius="md" padding={2}>
+    <text weight="medium">2. Envio da apresentação pessoal</text>
+    <text size="sm" color="secondary">Mensagem de apresentação de Letícia.</text>
+  </box>
+  <box align="center"><icon name="arrow-down" color="secondary"/></box>
+  <box background="surface-secondary" radius="md" padding={2}>
+    <text weight="medium">3. Apresentação do empreendimento</text>
+    <text size="sm" color="secondary">Envio do vídeo e dos dois áudios previamente gravados por ela.</text>
+  </box>
+  <box align="center"><icon name="arrow-down" color="secondary"/></box>
+  <box background="surface-secondary" radius="md" padding={2}>
+    <text weight="medium">4. Identificação do interesse</text>
+    <text size="sm" color="secondary">O sistema recebe a resposta e identifica a próxima etapa do atendimento.</text>
+  </box>
+  <box align="center"><icon name="arrow-down" color="secondary"/></box>
+  <box background="surface-secondary" radius="md" padding={2}>
+    <text weight="medium">5. Atualização do CRM</text>
+    <text size="sm" color="secondary">O contato é registrado ou atualizado conforme o resultado da conversa.</text>
+  </box>
+</box>
+
+O fluxo não deverá repetir a apresentação a cada nova mensagem. Para isso, cada contato terá um estado de atendimento persistido.
+
+Também será possível configurar sequências diferentes para cada empreendimento.
+
+### Módulo 2. Apresentação de empreendimentos e valores
+
+<badge color="success">Prioridade: essencial</badge>
+
+Criaremos um catálogo de empreendimentos contendo as informações autorizadas por Letícia.
+
+Cada empreendimento poderá ter nome, localização, descrição, tipologias, unidades disponíveis, valores, condições de pagamento e materiais de apresentação.
+
+Quando um cliente perguntar sobre preços, o sistema deverá identificar o empreendimento correspondente, consultar as informações cadastradas e enviar a mensagem de valores apropriada.
+
+A IA não será responsável por inventar ou estimar preços e condições comerciais.
+
+As informações cadastrais e comerciais deverão ser atualizadas por Letícia quando houver alterações.
+
+### Módulo 3. CRM e classificação automática
+
+<badge color="success">Prioridade: essencial</badge>
+
+O CRM permitirá acompanhar o histórico de cada cliente e sua situação no processo comercial.
+
+Propõe-se inicialmente o seguinte funil:
+
+<box border radius="lg" padding={3} gap={2}>
+  {@body const stages=[["Novo contato","blue"],["Apresentação enviada","info"],["Interesse identificado","discovery"],["Visita a agendar","warning"],["Visita agendada","warning"],["Visita realizada","info"],["Em negociação","discovery"],["Venda ou locação concluída","success"]]}
+  {#each stages as stage,i}
+    <row align="center" gap={2}>
+      <box background="surface-secondary" radius="md" size="30px" align="center" justify="center"><text size="sm" weight="medium" tabularNums>{i+1}</text></box>
+      <box flex="1" gap={1}>
+        <text weight="medium">{stage[0]}</text>
+        <box background="surface-tertiary" height="4px" radius="full"><box background={stage[1]==="success"?"#16a34a":stage[1]==="warning"?"#d97706":"#64748b"} height="4px" radius="full" width={`${(i+1)*12.5}%`}/></box>
+      </box>
+    </row>
+  {/each}
+  <divider color="subtle"/>
+  <text color="secondary" size="sm">Situações paralelas: atendimento humano, aguardando resposta, sem interesse e atendimento encerrado.</text>
+</box>
+
+Cada cliente terá um registro contendo nome, telefone, empreendimento de interesse, etapa comercial, datas relevantes, histórico de mensagens e observações.
+
+As etapas poderão ser alteradas manualmente ou por regras de classificação automática.
+
+**Ponto de implementação:** o Evo CRM possui gerenciamento de contatos e conversas, mas será necessário validar se sua interface e seu modelo de dados atendem integralmente ao funil imobiliário pretendido. A estrutura específica de oportunidades e etapas comerciais será implementada como extensão somente se a funcionalidade nativa for insuficiente. <Cite refs={["turn415704search1","turn771161search6"]}/>
+
+### Módulo 4. Atendimento inteligente
+
+<badge color="warning">Prioridade: após o fluxo básico</badge>
+
+A inteligência artificial será utilizada para interpretar mensagens que não correspondam diretamente às respostas padronizadas.
+
+Exemplo de funcionamento:
+
+<box border radius="lg" padding={3} gap={2}>
+  <box background="surface-secondary" radius="lg" padding={3} gap={1}>
+    <text color="secondary" size="xs">CLIENTE</text>
+    O apartamento de dois quartos tem varanda? E fica próximo do metrô?
+  </box>
+  <box background="surface" border radius="lg" padding={3} gap={1}>
+    <text color="secondary" size="xs">SISTEMA</text>
+    Consulta as informações cadastradas sobre o empreendimento e verifica se existem dados suficientes para responder.
+  </box>
+  <box background="surface-secondary" radius="lg" padding={3} gap={1}>
+    <text color="secondary" size="xs">RESULTADO</text>
+    Se as informações estiverem disponíveis, o sistema responde naturalmente. Caso contrário, encaminha a pergunta para Letícia.
+  </box>
+</box>
+
+O agente terá acesso apenas às informações relevantes para o atendimento imobiliário.
+
+Sua atuação será limitada a interpretar mensagens, consultar os dados cadastrados, formular respostas, identificar intenções e solicitar atendimento humano quando necessário.
+
+Decisões como concessão de descontos, negociação extraordinária, promessa de disponibilidade e alteração de condições comerciais permanecerão sob controle de Letícia.
+
+### Módulo 5. Atendimento humano
+
+<badge color="success">Prioridade: essencial</badge>
+
+Letícia continuará podendo responder diretamente pelo WhatsApp e assumir o atendimento sempre que necessário.
+
+O sistema deverá controlar três estados operacionais:
+
+| Estado | Comportamento |
+|---|---|
+| Automático | O sistema responde conforme as regras configuradas. |
+| Humano | Letícia assume a conversa; o bot permanece suspenso. |
+| Pausado | O atendimento automático fica desativado até ser retomado. |
+
+Ao assumir uma conversa manualmente, Letícia não deverá disputar o atendimento com o bot.
+
+A retomada automática ocorrerá somente quando estiver explicitamente configurada para aquela situação.
+
+Esse comportamento precisa de validação e implementação específica: existe uma solicitação de melhoria no Evo CRM relacionada justamente à interrupção do bot quando o operador responde pelo WhatsApp conectado. Não devemos presumir que isso funcione integralmente na versão escolhida sem um teste ponta a ponta. <Cite refs={["turn131565search3"]}/>
+
+### Módulo 6. Agendamento de visitas
+
+<badge color="warning">Prioridade: segunda etapa</badge>
+
+O sistema deverá identificar quando um cliente manifesta interesse em visitar um imóvel.
+
+O fluxo previsto é: identificar o interesse, consultar a disponibilidade, oferecer horários, registrar o agendamento e enviar uma confirmação.
+
+A primeira versão poderá trabalhar com confirmação manual de Letícia, sem necessidade de integração com um calendário externo.
+
+Posteriormente, poderemos integrar os agendamentos ao Google Agenda, se esse for o calendário utilizado por ela.
+
+### Módulo 7. Convites para cafés da manhã
+
+<badge color="warning">Prioridade: segunda etapa</badge>
+
+O sistema permitirá criar um evento e selecionar os contatos que deverão receber um convite.
+
+A automação semanal terá o seguinte funcionamento:
+
+<box border radius="lg" padding={3} gap={2}>
+  <row align="center" justify="between">
+    <box gap={1}>
+      <text color="secondary" size="xs">QUINTA-FEIRA</text>
+      **Preparação dos convites**
+    </box>
+    <badge color="info">Automação</badge>
+  </row>
+  O sistema identifica o evento de sábado, seleciona os contatos elegíveis e prepara os convites.
+  <divider color="subtle"/>
+  <row align="center" justify="between">
+    <box gap={1}>
+      <text color="secondary" size="xs">CONFIRMAÇÃO</text>
+      **Revisão por Letícia**
+    </box>
+    <badge color="warning">Aprovação</badge>
+  </row>
+  Letícia poderá conferir os destinatários e as informações do evento antes do envio.
+  <divider color="subtle"/>
+  <row align="center" justify="between">
+    <box gap={1}>
+      <text color="secondary" size="xs">SÁBADO</text>
+      **Realização do evento**
+    </box>
+    <badge color="success">Acompanhamento</badge>
+  </row>
+  As confirmações de presença e os comparecimentos poderão ser registrados no CRM.
+</box>
+
+A automação será baseada em eventos e contatos selecionados, sem construir uma ferramenta genérica de disparos.
+
+---
+
+## 5. Estrutura de dados
+
+O Evo CRM será a fonte principal dos dados de clientes e conversas.
+
+O PostgreSQL também poderá armazenar informações específicas do sistema imobiliário, em tabelas próprias, evitando modificar desnecessariamente as tabelas internas do CRM.
+
+| Entidade | Informações principais |
+|---|---|
+| Cliente | Identificador no CRM, nome, telefone e dados comerciais |
+| Empreendimento | Nome, localização, descrição e materiais |
+| Unidade | Empreendimento, tipologia, valor e disponibilidade |
+| Interesse | Cliente, empreendimento, status e observações |
+| Atendimento | Cliente, etapa atual e responsável |
+| Visita | Cliente, empreendimento, data, horário e confirmação |
+| Evento | Empreendimento, data, local e descrição |
+| Convite | Evento, cliente, envio e confirmação |
+| Automação | Tipo, estado, configuração e histórico de execução |
+
+A estrutura definitiva dependerá dos recursos existentes no Evo CRM e das respostas de Letícia ao questionário.
+
+Não criaremos tabelas paralelas para informações que já possuam representação adequada no CRM.
+
+---
+
+## 6. Infraestrutura self-hosted
+
+### 6.1. Servidor
+
+A implantação inicial será realizada em uma VPS Linux com Docker.
+
+O sistema será mantido isolado dos demais projetos hospedados no servidor, com redes, bancos, volumes, credenciais e rotinas de backup próprios.
+
+<box border radius="lg" padding={3} gap={2}>
+  <text weight="medium">Dimensionamento inicial para homologação</text>
+  <grid columns={2} gap={2}>
+    <box background="surface-secondary" radius="md" padding={3}>
+      <text color="secondary" size="xs">PROCESSAMENTO</text>
+      <title size="xl" tabularNums>4–6 vCPU</title>
+    </box>
+    <box background="surface-secondary" radius="md" padding={3}>
+      <text color="secondary" size="xs">MEMÓRIA</text>
+      <title size="xl" tabularNums>12–16 GB</title>
+    </box>
+    <box background="surface-secondary" radius="md" padding={3}>
+      <text color="secondary" size="xs">ARMAZENAMENTO</text>
+      <title size="xl" tabularNums>80–100 GB</title>
+    </box>
+    <box background="surface-secondary" radius="md" padding={3}>
+      <text color="secondary" size="xs">SISTEMA</text>
+      <title size="lg">Ubuntu Server</title>
+    </box>
+  </grid>
+  <caption>Estimativa inicial de capacidade, não requisito oficial nem garantia de suficiência. O consumo real dependerá da composição da stack, das mídias armazenadas e dos serviços simultâneos.</caption>
+</box>
+
+Antes da implantação definitiva, será necessário medir a utilização de CPU, RAM, armazenamento e banco de dados com os serviços efetivamente executados.
+
+### 6.2. Serviços e isolamento
+
+A implantação será organizada em grupos de serviços:
+
+| Grupo | Componentes |
+|---|---|
+| Entrada | Traefik e HTTPS |
+| WhatsApp | Evolution API |
+| CRM | Serviços oficiais do Evo CRM Community |
+| Automação | Serviço Python personalizado |
+| Persistência | PostgreSQL e Redis |
+| Armazenamento | Volumes persistentes de mídia |
+
+A configuração oficial do Evo CRM deverá ser utilizada como base. Ela contempla dependências adicionais para determinadas funcionalidades, inclusive serviços de filas e rastreamento de eventos, que não devem ser removidos sem verificar seus efeitos sobre a aplicação. <Cite refs={["turn865085search4","turn865085search3"]}/>
+
+Não acrescentaremos serviços de mensageria, monitoramento ou armazenamento que já estejam adequadamente contemplados na instalação.
+
+### 6.3. Segurança e disponibilidade
+
+A implantação deverá incluir autenticação individual, HTTPS, segregação de credenciais, controle de acesso administrativo e restrição das APIs internas.
+
+Também serão necessários backups automatizados do banco de dados e das mídias, testes periódicos de restauração, persistência da sessão da Evolution API e monitoramento de conectividade com o WhatsApp.
+
+Os backups deverão ser armazenados fora da VPS principal. Além disso, os registros de execução deverão evitar a exposição desnecessária de telefones, mensagens e credenciais.
+
+---
+
+## 7. Planejamento de desenvolvimento
+
+A implantação será incremental, com validação de cada etapa antes do avanço para a seguinte.
+
+<box border radius="xl" padding={3} gap={3}>
+  <row align="center" justify="between">
+    <title>Fase 1. Levantamento e especificação</title>
+    <badge color="info">Preparação</badge>
+  </row>
+  **Objetivo:** transformar as respostas de Letícia em requisitos funcionais e regras de atendimento.
+
+  <text color="secondary" weight="medium" size="sm">ATIVIDADES</text>
+  - Analisar o questionário respondido.
+  - Reunir mensagens, áudios, vídeos e tabelas de preços.
+  - Identificar os empreendimentos atendidos.
+  - Documentar os fluxos reais de conversação.
+  - Definir os campos e as etapas do CRM.
+  - Estabelecer quais situações exigem intervenção humana.
+
+  <box background="surface-secondary" radius="md" padding={2}>
+    **Entrega:** especificação funcional do MVP e catálogo inicial de mensagens.
+  </box>
+  <divider/>
+  <row align="center" justify="between">
+    <title>Fase 2. Infraestrutura e CRM</title>
+    <badge color="info">Implantação</badge>
+  </row>
+  **Objetivo:** estabelecer a infraestrutura e validar a operação do CRM com a Evolution API.
+
+  <text color="secondary" weight="medium" size="sm">ATIVIDADES</text>
+  - Preparar a VPS, o Docker e o proxy reverso.
+  - Instalar o Evo CRM Community.
+  - Configurar banco de dados e persistência.
+  - Instalar e integrar a Evolution API.
+  - Conectar o WhatsApp de teste.
+  - Validar recebimento e envio de texto, imagens, vídeos e áudios.
+  - Testar atendimento manual e sincronização das conversas.
+
+  <box background="surface-secondary" radius="md" padding={2}>
+    **Entrega:** CRM acessível, com integração funcional ao WhatsApp e persistência das conversas.
+  </box>
+  <divider/>
+  <row align="center" justify="between">
+    <title>Fase 3. Automação determinística</title>
+    <badge color="success">MVP</badge>
+  </row>
+  **Objetivo:** automatizar os atendimentos repetitivos sem depender inicialmente de IA.
+
+  <text color="secondary" weight="medium" size="sm">ATIVIDADES</text>
+  - Implementar reconhecimento de novos contatos.
+  - Configurar a apresentação pessoal.
+  - Implementar envio de vídeo e áudios gravados.
+  - Configurar respostas padronizadas sobre valores.
+  - Registrar e atualizar os contatos no CRM.
+  - Controlar o estado de cada atendimento.
+  - Implementar transferência para atendimento humano.
+
+  <box background="surface-secondary" radius="md" padding={2}>
+    **Entrega:** sistema capaz de executar o atendimento inicial de maneira autônoma e permitir a continuidade manual.
+  </box>
+  <divider/>
+  <row align="center" justify="between">
+    <title>Fase 4. Inteligência artificial</title>
+    <badge color="warning">Evolução</badge>
+  </row>
+  **Objetivo:** adicionar interpretação contextual e respostas naturais.
+
+  <text color="secondary" weight="medium" size="sm">ATIVIDADES</text>
+  - Integrar a API da OpenAI.
+  - Estruturar a base de informações comerciais.
+  - Implementar interpretação de mensagens.
+  - Classificar a intenção e o interesse dos clientes.
+  - Gerar respostas fundamentadas nos dados cadastrados.
+  - Definir regras de encaminhamento para Letícia.
+  - Validar respostas diante de informações ausentes ou desatualizadas.
+
+  <box background="surface-secondary" radius="md" padding={2}>
+    **Entrega:** agente capaz de responder a perguntas fora do roteiro, respeitando as regras comerciais definidas.
+  </box>
+  <divider/>
+  <row align="center" justify="between">
+    <title>Fase 5. Agendamentos e eventos</title>
+    <badge color="warning">Evolução</badge>
+  </row>
+  **Objetivo:** organizar visitas imobiliárias e automatizar os convites para eventos.
+
+  <text color="secondary" weight="medium" size="sm">ATIVIDADES</text>
+  - Criar o gerenciamento de visitas.
+  - Implementar confirmação e lembretes.
+  - Criar o cadastro de eventos.
+  - Implementar seleção de contatos para convites.
+  - Configurar a preparação semanal dos convites.
+  - Registrar confirmações de presença.
+
+  <box background="surface-secondary" radius="md" padding={2}>
+    **Entrega:** controle de visitas e convites integrado ao histórico de cada cliente.
+  </box>
+  <divider/>
+  <row align="center" justify="between">
+    <title>Fase 6. Homologação e entrega</title>
+    <badge color="success">Produção</badge>
+  </row>
+  **Objetivo:** disponibilizar o sistema para uso diário.
+
+  <text color="secondary" weight="medium" size="sm">ATIVIDADES</text>
+  - Executar testes completos dos fluxos de atendimento.
+  - Validar a recuperação de sessões e mensagens.
+  - Testar interrupção e retomada das automações.
+  - Verificar funcionamento após reinício da VPS.
+  - Validar backups e restauração.
+  - Configurar o ambiente de produção.
+  - Orientar Letícia sobre utilização e atualização dos dados.
+  - Acompanhar os primeiros atendimentos reais.
+
+  <box background="surface-secondary" radius="md" padding={2}>
+    **Entrega:** sistema operacional e documentação de uso e manutenção.
+  </box>
+</box>
+
+---
+
+## 8. Critérios de aceite do MVP
+
+O sistema estará apto à primeira utilização real quando os seguintes cenários forem validados:
+
+{@body const tests=["Um novo contato é registrado automaticamente no CRM.","A apresentação, o vídeo e os áudios corretos são enviados sem duplicação.","O sistema identifica o empreendimento de interesse e envia os valores cadastrados.","Uma nova mensagem de um cliente existente não reinicia indevidamente a apresentação.","Letícia consegue assumir o atendimento pelo WhatsApp sem respostas concorrentes do bot.","Uma mensagem recebida durante o atendimento humano não reativa a automação indevidamente.","O histórico das conversas permanece disponível no CRM.","O sistema não gera respostas comerciais sem informações suficientes.","A indisponibilidade temporária de um serviço não provoca perda ou duplicação de mensagens.","O ambiente recupera os dados e a sessão de atendimento após reinicialização.","A restauração de um backup é concluída com sucesso."]}
+{@body const [checked,setChecked]=DIL.useState([])}
+<box border radius="lg" padding={3} gap={3}>
+  <row align="center" justify="between">
+    <text weight="medium">Checklist de homologação</text>
+    <badge color={checked.length===tests.length?"success":"secondary"}>{checked.length}/{tests.length}</badge>
+  </row>
+  <box background="surface-tertiary" height="5px" radius="full">
+    <box background="surface-inverted" height="5px" radius="full" width={`${checked.length/tests.length*100}%`}/>
+  </box>
+  {#each tests as test,i}
+    <checkbox key={i} checked={checked.includes(i)} onChange={v=>setChecked(old=>v?[...old,i]:old.filter(x=>x!==i))}>{test}</checkbox>
+  {/each}
+</box>
+
+---
+
+## 9. Custos previstos
+
+O sistema não terá assinatura de CRM, n8n ou plataforma comercial de automação.
+
+Entretanto, self-hosted não significa necessariamente custo operacional zero.
+
+| Item | Modelo de custo |
+|---|---|
+| Evo CRM Community | Software sem cobrança por usuário na edição Community |
+| Evolution API | Software sem assinatura para a integração escolhida |
+| Python e FastAPI | Sem licença comercial |
+| PostgreSQL e Redis | Sem assinatura de software |
+| Hospedagem | Custo da VPS, caso não utilize infraestrutura já disponível |
+| OpenAI API | Cobrança conforme utilização dos modelos e recursos |
+| Domínio | Custo de registro ou renovação, se necessário |
+| Backup externo | Conforme capacidade e provedor escolhido |
+
+A licença e as condições de distribuição dos componentes Evolution deverão ser preservadas, inclusive eventuais obrigações específicas previstas nos respectivos repositórios. <Cite refs={["turn131565search1","turn771161search0"]}/>
+
+O uso da OpenAI será limitado inicialmente às mensagens que realmente exigirem interpretação inteligente. Apresentações, envio de materiais, respostas padronizadas e atualizações determinísticas do CRM não precisarão gerar chamadas à IA.
+
+---
+
+## 10. Decisões pendentes
+
+O planejamento define a arquitetura e a ordem de implementação, mas a especificação funcional definitiva dependerá das respostas de Letícia.
+
+As decisões que ainda precisam ser confirmadas são:
+
+| Decisão | Informação necessária |
+|---|---|
+| Fluxo inicial | Ordem exata das mensagens, vídeos e áudios |
+| Empreendimentos | Quantidade, materiais e diferenças entre os atendimentos |
+| Valores | Origem dos dados e frequência de atualização |
+| Atendimento humano | Quando o sistema deve parar e como poderá retomar |
+| Classificação | Etapas comerciais e critérios de interesse |
+| Visitas | Disponibilidade, confirmação e organização dos horários |
+| Eventos | Seleção dos destinatários e regras dos convites |
+| CRM | Campos e funcionalidades que ela efetivamente utilizará |
+| IA | Assuntos que poderá responder autonomamente |
+
+A integração da Evolution API com o CRM, a compatibilidade do atendimento humano pelo WhatsApp e a adequação do funil imobiliário também precisarão ser homologadas tecnicamente antes de qualquer customização extensa.
+
+---
+
+## 11. Escopo da primeira entrega
+
+<box border radius="xl" padding={3} gap={2}>
+  <badge color="success">MVP recomendado</badge>
+  <title size="xl">Atendimento inicial + CRM + intervenção humana</title>
+
+  A primeira entrega deverá resolver o problema que Letícia descreveu como mais trabalhoso: atender novos clientes, enviar repetidamente os mesmos materiais e organizar as conversas.
+
+  <divider color="subtle"/>
+
+  **Incluído no MVP:** integração com o WhatsApp, cadastro de contatos, apresentações automáticas, envio de vídeos e áudios, respostas padronizadas sobre valores, histórico de conversas, classificação inicial e atendimento humano.
+
+  **Para as etapas seguintes:** agente de IA contextual, agendamento inteligente de visitas, convites semanais, acompanhamento comercial avançado e relatórios.
+</box>
+
+**A execução começará pela análise do questionário respondido e pela homologação da integração Evo CRM + Evolution API.** Assim, desenvolveremos apenas o que faltar para atender à rotina real de Letícia, sem transformar uma automação de atendimento imobiliário em um projeto de infraestrutura maior que a própria imobiliária.
+---
+
+## 12. Gestão de tarefas e tickets pelo WhatsApp
+
+### 12.1. Objetivo
+
+Incorporar ao atendimento imobiliário um registro estruturado de solicitações e pendências, inspirado no exemplo visual apresentado de criação de ticket pelo WhatsApp. A imagem demonstra um aviso de tarefa criada, com identificador, descrição, projeto, solicitante, estágio e data. Não comprova, por si só, quais integrações ou recursos internos o sistema de referência oferece.
+
+No projeto da Letícia, o recurso permitirá transformar solicitações recebidas em atividades rastreáveis, vinculadas ao cliente, à conversa e, quando aplicável, ao empreendimento. A operação deverá ocorrer na interface do Evo CRM sempre que seus recursos nativos forem suficientes, sem introduzir um gerenciador de tarefas paralelo desnecessário.
+
+### 12.2. Requisitos funcionais
+
+- **Criação:** registrar manualmente uma atividade no CRM ou criá-la por regra a partir de uma solicitação recebida pelo WhatsApp. A identificação automática por IA poderá ser incluída em etapa posterior.
+- **Identificação:** atribuir a cada atividade um identificador único e estável, sem reutilização após exclusão ou encerramento.
+- **Vinculação:** associar a atividade ao contato, à conversa de origem, ao empreendimento e à visita ou oportunidade comercial, quando esses registros existirem.
+- **Campos mínimos:** identificador, título ou descrição, solicitante, responsável, status, data de criação e histórico de alterações. Prazo e empreendimento serão opcionais quando não se aplicarem.
+- **Estados iniciais:** A fazer, Em andamento, Aguardando cliente, Concluída e Cancelada. O estado do ticket não substitui a etapa comercial do cliente nem o estado Automático/Humano/Pausado da conversa.
+- **Acompanhamento:** permitir consultar, atualizar, concluir e reabrir atividades sem perder a referência à solicitação original.
+- **Notificação:** ao criar ou alterar uma atividade, permitir aviso à Letícia no CRM e, se configurado, uma confirmação objetiva pelo WhatsApp. Mensagens ao cliente devem respeitar o contexto da conversa e não expor informações internas.
+- **Controle de duplicidade:** mensagens repetidas, reentregas de eventos e novas mensagens sobre a mesma solicitação não devem gerar automaticamente tickets duplicados.
+- **Atendimento humano:** a existência de uma atividade não deve reativar o bot quando a conversa estiver em modo Humano ou Pausado.
+
+### 12.3. Fluxo ilustrativo
+
+1. Um cliente solicita pelo WhatsApp uma visita ou o envio de proposta de determinado imóvel.
+2. O sistema identifica o contato e verifica se já existe uma atividade aberta para a mesma solicitação.
+3. Caso não exista, cria uma atividade com identificador, descrição, vínculo com cliente e empreendimento, responsável e status A fazer.
+4. Letícia visualiza a pendência no CRM e executa ou encaminha o atendimento.
+5. O status e o histórico são atualizados até a conclusão; uma confirmação ao cliente é enviada apenas quando pertinente e configurada.
+
+### 12.4. Implantação incremental
+
+**MVP:** validar o módulo nativo de tarefas/atividades do Evo CRM, cadastrar e atualizar atividades manualmente, vincular contatos e conversas e exibir o status. A funcionalidade depende da confirmação de que a versão instalada oferece campos, permissões e meios de integração adequados. Se não oferecer, implementar somente a extensão mínima necessária na camada Python e em tabelas próprias.
+
+**Evolução:** criar tickets automaticamente a partir de eventos da Evolution API, classificar solicitações com IA quando necessário, notificar responsáveis, incluir prazos e lembretes e disponibilizar relatórios de pendências. Esses itens não são pré-requisitos para o atendimento automático inicial.
+
+### 12.5. Critérios de aceite adicionais
+
+- Uma solicitação de visita ou proposta gera uma atividade vinculada ao cliente e à conversa corretos.
+- Cada atividade recebe identificador único e pode ser localizada pelo CRM.
+- Uma mesma mensagem processada novamente não cria atividade duplicada.
+- A alteração de status mantém histórico, responsável e vínculo com a solicitação original.
+- Uma atividade concluída não altera por conta própria o estágio comercial nem retoma uma conversa em atendimento humano.
+- O recurso funciona após reinicialização dos serviços e recuperação dos dados persistidos.
+
+**Decisões pendentes:** verificar os recursos nativos de tarefas e sua API na versão homologada do Evo CRM; definir as categorias de solicitações, responsáveis, regras de prazo, notificações e autorização para criação automática de tickets.
